@@ -1,0 +1,88 @@
+* FT Leader
+  ~ft-leader~, short for "follow the leader", is an emacs package that provides leader access to any existing emacs
+  keybindings.
+  By default it binds no keys.
+
+  This mode is a modified from [[https://github.com/cute-jumper/.emacs.d/blob/master/modules/qjp-leader-mode.el][qjp-leader-mode]] . My thanks to cute-jumper for this and other great ideas I stole for
+  my config.
+
+  Find a simple config with this mode configured [[https://github.com/hamnixster/ft-leader-example-config][here]] if you need help getting started.
+
+  The main entry is via ~ft-leader-mode-exec~.
+
+** Setup and Explanation
+   Basic usage involves adding ~ft-leader-mode.el~ to your ~load-path~ and adding some basic configuration:
+   #+BEGIN_SRC emacs-lisp
+     (require 'ft-leader-mode)
+     (ft-leader-mode)
+   #+END_SRC
+
+   Then you can execute ~ft-leader-mode-exec~ and FT Leader will attempt to handle keypresses until a command is reached
+   or a key is entered that does not lead to a command or a map.
+
+   You likely will want to bind ~ft-leader-mode-exec~ somewhere in your default map or the normal map of your modal
+   package of choice. In non-modal editing, a homerow key-chord (like ~kk~) may be a good decision, and ~SPC~ is my key of
+   preference in modal editing.
+
+   The key entered after executing ~ft-leader-mode-exec~, or entering a nested keymap, acts as if some modifier is held.
+
+   By default this modifier is ~C-~ , so executing ~ft-leader-mode-exec~ followed by ~a~ will execute ~C-a~ , and
+   executing ~ft-leader-mode-exec~ followed by ~x s~ will execute ~C-x C-s~ for example.
+
+   Additionally, a default ~no-modifier~ is configured as ~SPC~ . So to enter a ~C-x s~ , you can execute
+   ~ft-leader-mode-exec~ followed by ~x SPC s~ . If ~SPC~ is entered directly after ~ft-leader-mode-exec~ , the default
+   behaviour is to cancel the leader, but this is configurable in ~ft-leader-no-modifier-top-level-command~ .
+
+   Modifiers can be added and changed by modifying the ~ft-leader-mod-alist~ .
+   The default value is:
+   #+BEGIN_SRC emacs-lisp
+     '((nil . "C-") ("SPC" . ""))
+   #+END_SRC
+   but you likely will want to extend this to grant access to Meta and other modifiers:
+   #+BEGIN_SRC emacs-lisp
+     '((nil . "C-") ("SPC" . "") ("m" . "M-") ("," . "C-M-"))
+   #+END_SRC
+   Then you can enter ~C-M-SPC~ by executing ~ft-leader-mode-exec~ followed by ~​, SPC~ , or ~C-x M-:~ with
+   ~ft-leader-mode-exec~ followed by ~x m :~
+
+   You likely also have custom configured keys and maps on single letters under ~C-c~ . These can be made specially
+   available at the top level by configuring ~ft-leader-special-command~ . Enter characters here and ~C-c `char`~ is
+   executed instead of the default mod behaviour.
+
+   Additionally, ~ft-leader~ can create and bind special maps for you if you configure ~ft-leader-special-map~ with
+   characters. Then you can use the helpers to bind in these maps:
+   #+BEGIN_SRC emacs-lisp
+     (setq ft-leader-special-map '(?f))
+     (ft-leader-setup-special-maps)
+     (ft-leader-bind-special-maps)
+     (ft-leader-define-key ?f "C-f" 'find-file)
+   #+END_SRC
+   This simply binds a map to ~C-c f~ and the command (~find-file~) to ~C-c f C-f~ so it can be accessed with
+   ~ft-leader-mode-exec~ followed by ~f f~ .
+
+*** universal argument
+    This basically works as expected. Executing ~ft-leader-mode-exec~ followed by ~u~ will set the arg and can be
+    followed by digits, more calls to ~ft-leader-mode-exec~ followed by ~u~ to increment, or any commands via
+    ~ft-leader-mode-exec~ .
+
+** ~which-key~ Integration
+   There is an included ~which-key~ integration that can be enabled:
+   #+BEGIN_SRC emacs-lisp
+     (setq ft-leader-which-key t)
+     (require 'which-key)
+     (which-key-mode +1)
+   #+END_SRC
+
+   This feature requires emacs 26+ for threads. If you have an idea of how this can be managed without threads, please
+   open an issue or PR.
+
+   This does not currently support ~undo~ , ~abort~ , or ~digit-arg~ from the ~C-h~ menu. Additionally ~C-h~ must be
+   entered literally to access paging, FT Leader cannot be used to enter the ~C-h~ to access this menu.
+
+** ~evil~
+   Add the following configuration to ensure ~ft-leader~ works with both ~evil~ and ~which-key~ enabled the first time
+   ~which-key~ is launched.
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'evil-local-mode-hook #'grm-leader-ensure-priority-bindings)
+   #+END_SRC
+   If you use other packages that utilize ~emulation-mode-map-alists~ , similar configuration may be needed.
