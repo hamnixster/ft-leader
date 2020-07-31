@@ -8,6 +8,8 @@
 
   Find a simple config with this mode configured [[https://github.com/hamnixster/ft-leader-example-config][here]] if you need help getting started.
 
+  Find a short video explaining the features [[https://www.youtube.com/watch?v=95gcVO0rcUM][here]].
+
   The main entry is via ~ft-leader-mode-exec~.
 
 ** Setup and Explanation
